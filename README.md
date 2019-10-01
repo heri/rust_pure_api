@@ -36,6 +36,7 @@ There should be one less row in users table.
 
 NEXT
 
-Next step: Use an in-memory store such as redis instead of postgres and then benchmark if you can easily get 1Mops. This would be similar to a trading platform receiving buy/sell orders.
-
-Unit and functional tests
+* `to_async` + diesel ? https://github.com/diesel-rs/diesel/issues/399
+* how does this deal with concurrent requests?
+* Use an in-memory store such as redis instead of postgres and then benchmark if you can easily get 1Mops. This would be similar to a trading platform receiving buy/sell orders.
+* Tests

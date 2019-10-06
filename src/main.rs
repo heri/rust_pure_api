@@ -27,10 +27,14 @@ fn main() {
                 .route(web::post().to_async(handlers::users::create))
         )
         .service(
-            web::resource("/users/{id}")
+            web::resource("/users/{Id}")
                 .route(web::get().to_async(handlers::users::show))
                 .route(web::delete().to_async(handlers::users::destroy))
                 .route(web::patch().to_async(handlers::users::update))
+        )
+        .service(
+            web::resource("/webhook")
+                .route(web::post().to_async(handlers::users::update_or_create))
         )
     )
     .bind("127.0.0.1:8088").unwrap()

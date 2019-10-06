@@ -5,7 +5,7 @@ pub struct UserList(pub Vec<User>);
 
 #[derive(Queryable, Serialize, Deserialize)]
 pub struct User {
-    pub id: i32,
+    pub Id: i32,
     pub playerNumber: i32,
     pub firstName: String,
     pub lastName: String,
@@ -63,17 +63,17 @@ impl NewUser {
 }
 
 impl User {
-    pub fn find(id: &i32) -> Result<User, diesel::result::Error> {
+    pub fn find(Id: &i32) -> Result<User, diesel::result::Error> {
         use diesel::QueryDsl;
         use diesel::RunQueryDsl;
         use crate::db_connection::establish_connection;
 
         let connection = establish_connection();
 
-        users::table.find(id).first(&connection)
+        users::table.find(Id).first(&connection)
     }
 
-    pub fn destroy(id: &i32) -> Result<(), diesel::result::Error> {
+    pub fn destroy(Id: &i32) -> Result<(), diesel::result::Error> {
         use diesel::QueryDsl;
         use diesel::RunQueryDsl;
         use crate::schema::users::dsl;
@@ -81,11 +81,11 @@ impl User {
 
         let connection = establish_connection();
 
-        diesel::delete(dsl::users.find(id)).execute(&connection)?;
+        diesel::delete(dsl::users.find(Id)).execute(&connection)?;
         Ok(())
     }
 
-    pub fn update(id: &i32, new_user: &NewUser) -> Result<(), diesel::result::Error> {
+    pub fn update(Id: &i32, new_user: &NewUser) -> Result<(), diesel::result::Error> {
         use diesel::QueryDsl;
         use diesel::RunQueryDsl;
         use crate::schema::users::dsl;
@@ -93,7 +93,7 @@ impl User {
 
         let connection = establish_connection();
 
-        diesel::update(dsl::users.find(id))
+        diesel::update(dsl::users.find(Id))
             .set(new_user)
             .execute(&connection)?;
         Ok(())

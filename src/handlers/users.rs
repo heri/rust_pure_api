@@ -18,26 +18,44 @@ pub fn create(new_user: web::Json<NewUser>) -> Result<HttpResponse, HttpResponse
         })
 }
 
+pub fn update_or_create(user: web::Json<User>) -> Result<HttpResponse, HttpResponse> {
+    User::find(user.Id)
+        .map(|user| 
+            User::update(&Id, &new_user)
+                .map(|_| HttpResponse::Ok().json(()))
+                .map_err(|e| {
+                    HttpResponse::InternalServerError().json(e.to_string())
+                })
+        )
+        .map_err(|e| {
+            user.create()
+                .map(|user| HttpResponse::Ok().json(user))
+                .map_err(|e| {
+                    HttpResponse::InternalServerError().json(e.to_string())
+                })
+        })
+}
+
 use crate::models::user::User;
 
-pub fn show(id: web::Path<i32>) -> Result<HttpResponse, HttpResponse> {
-    User::find(&id)
+pub fn show(Id: web::Path<i32>) -> Result<HttpResponse, HttpResponse> {
+    User::find(&Id)
         .map(|user| HttpResponse::Ok().json(user))
         .map_err(|e| {
             HttpResponse::InternalServerError().json(e.to_string())
         })
 }
 
-pub fn destroy(id: web::Path<i32>) -> Result<HttpResponse, HttpResponse> {
-    User::destroy(&id)
+pub fn destroy(Id: web::Path<i32>) -> Result<HttpResponse, HttpResponse> {
+    User::destroy(&Id)
         .map(|_| HttpResponse::Ok().json(()))
         .map_err(|e| {
             HttpResponse::InternalServerError().json(e.to_string())
         })
 }
 
-pub fn update(id: web::Path<i32>, new_user: web::Json<NewUser>) -> Result<HttpResponse, HttpResponse> {
-    User::update(&id, &new_user)
+pub fn update(Id: web::Path<i32>, new_user: web::Json<NewUser>) -> Result<HttpResponse, HttpResponse> {
+    User::update(&Id, &new_user)
         .map(|_| HttpResponse::Ok().json(()))
         .map_err(|e| {
             HttpResponse::InternalServerError().json(e.to_string())

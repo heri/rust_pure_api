@@ -1,6 +1,6 @@
 table! {
-    users (id) {
-        id -> Int4,
+    users (Id) {
+        Id -> Int4,
         playerNumber -> Int4,
         firstName -> VarChar,
         lastName -> VarChar,

@@ -34,7 +34,7 @@ fn main() {
         )
         .service(
             web::resource("/webhook")
-                .route(web::post().to_async(handlers::users::update_or_create))
+                .route(web::post().to_async(handlers::users::upsert))
         )
     )
     .bind("127.0.0.1:8088").unwrap()

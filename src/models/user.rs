@@ -3,32 +3,44 @@ use crate::schema::users;
 #[derive(Serialize, Deserialize)]
 pub struct UserList(pub Vec<User>);
 
-#[derive(Queryable, Serialize, Deserialize)]
-pub struct User {
-    pub Id: i32,
-    pub playerNumber: i32,
-    pub firstName: String,
-    pub lastName: String,
-    pub tier: Option<i32>,
-    pub address1: String,
-    pub city: String,
-    pub zip: Option<String>,
-    pub country: String,
-    pub state: Option<String>,
-    pub email: Option<String>,
-    pub id3: Option<String>,
-    pub isBanned: Option<i32>,
-    pub latitude: Option<f64>,
-    pub longitude: Option<f64>,
-    pub gender: Option<String>
-}
-
 #[derive(Insertable, Deserialize, AsChangeset)]
 #[table_name="users"]
 pub struct NewUser {
     pub lastName: Option<String>,
     pub address1: Option<String>,
     pub id3: Option<String>
+}
+
+
+impl NewUser {
+    pub fn create(&self) -> Result<User, diesel::result::Error> {
+        use diesel::RunQueryDsl;
+        use crate::db_connection::establish_connection;
+
+        let connection = establish_connection();
+        diesel::insert_into(users::table)
+            .values(self)
+            .get_result(&connection)
+    }
+}
+
+#[derive(Queryable, Serialize, Deserialize, AsChangeset, Insertable)]
+pub struct User {
+    pub Id: i32,
+    pub playerNumber: String,
+    pub firstName: String,
+    pub lastName: String,
+    pub tier: Option<i32>,
+    pub address1: String,
+    pub city: String,
+    pub zip: Option<String>,
+    pub country: Option<String>,
+    pub email: Option<String>,
+    pub id3: Option<String>,
+    pub isBanned: Option<i32>,
+    pub latitude: Option<f64>,
+    pub longitude: Option<f64>,
+    pub gender: Option<i32>
 }
 
 impl UserList {
@@ -47,18 +59,6 @@ impl UserList {
                 .expect("Error loading users");
 
         UserList(result)
-    }
-}
-
-impl NewUser {
-    pub fn create(&self) -> Result<User, diesel::result::Error> {
-        use diesel::RunQueryDsl;
-        use crate::db_connection::establish_connection;
-
-        let connection = establish_connection();
-        diesel::insert_into(users::table)
-            .values(self)
-            .get_result(&connection)
     }
 }
 
@@ -85,7 +85,7 @@ impl User {
         Ok(())
     }
 
-    pub fn update(Id: &i32, new_user: &NewUser) -> Result<(), diesel::result::Error> {
+    pub fn update(Id: &i32, user: &User) -> Result<(), diesel::result::Error> {
         use diesel::QueryDsl;
         use diesel::RunQueryDsl;
         use crate::schema::users::dsl;
@@ -94,8 +94,25 @@ impl User {
         let connection = establish_connection();
 
         diesel::update(dsl::users.find(Id))
-            .set(new_user)
+            .set(user)
             .execute(&connection)?;
+        Ok(())
+    }
+
+    pub fn upsert(Id: &i32, user: &User) -> Result<(), diesel::result::Error> {
+        use diesel::QueryDsl;
+        use diesel::RunQueryDsl;
+        use crate::db_connection::establish_connection;
+
+        let connection = establish_connection();
+
+        diesel::insert_into(users::table)
+            .values(user)
+            .on_conflict(users::Id)
+            .do_update()
+            .set(user)
+            .execute(&connection)?;
+            
         Ok(())
     }
 }

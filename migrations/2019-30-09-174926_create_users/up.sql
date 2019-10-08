@@ -1,6 +1,7 @@
 -- Your SQL goes here
 CREATE TABLE users (
-  id SERIAL PRIMARY KEY,
+  Id SERIAL PRIMARY KEY,
+  playerNumber VARCHAR NOT NULL,
   firstName VARCHAR NOT NULL,
   lastName VARCHAR NOT NULL,
   tier INTEGER,

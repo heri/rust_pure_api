@@ -12,6 +12,9 @@ Add credentials of your local postgres install in `.env`
 
     $ echo DATABASE_URL=postgres://postgres:@localhost/rust_pure_api > .env
     $ diesel migration run
+
+You might have to create a database `rust_pure_api` manually
+
     $ cargo run
 
 Try creating a user, in another Terminal tab:
@@ -19,7 +22,7 @@ Try creating a user, in another Terminal tab:
 ```
     curl http://127.0.0.1:8088/users \                                                                                                
             -H "Content-Type: application/json" \
-            -d '{"firstName": "Henry", lastName: "Dubo", playerNumber: 201172, "address1": "5208 Av Parc", city: "Montreal", country: "Canada"}'
+            -d '{"first_name": "Henry", last_name: "Dubo", player_number: 201172, "address1": "5208 Av Parc", city: "Montreal", country: "Canada"}'
 ```
 
 There should be a new row in users table.

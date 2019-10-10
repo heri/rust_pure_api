@@ -27,7 +27,7 @@ fn main() {
                 .route(web::post().to_async(handlers::users::create))
         )
         .service(
-            web::resource("/users/{Id}")
+            web::resource("/users/{id}")
                 .route(web::get().to_async(handlers::users::show))
                 .route(web::delete().to_async(handlers::users::destroy))
                 .route(web::patch().to_async(handlers::users::update))

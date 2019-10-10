@@ -20,32 +20,32 @@ pub fn create(new_user: web::Json<NewUser>) -> Result<HttpResponse, HttpResponse
 
 use crate::models::user::User;
 
-pub fn show(Id: web::Path<i32>) -> Result<HttpResponse, HttpResponse> {
-    User::find(&Id)
+pub fn show(id: web::Path<i32>) -> Result<HttpResponse, HttpResponse> {
+    User::find(&id)
         .map(|user| HttpResponse::Ok().json(user))
         .map_err(|e| {
             HttpResponse::InternalServerError().json(e.to_string())
         })
 }
 
-pub fn destroy(Id: web::Path<i32>) -> Result<HttpResponse, HttpResponse> {
-    User::destroy(&Id)
+pub fn destroy(id: web::Path<i32>) -> Result<HttpResponse, HttpResponse> {
+    User::destroy(&id)
         .map(|_| HttpResponse::Ok().json(()))
         .map_err(|e| {
             HttpResponse::InternalServerError().json(e.to_string())
         })
 }
 
-pub fn update(Id: web::Path<i32>, user: web::Json<User>) -> Result<HttpResponse, HttpResponse> {
-    User::update(&Id, &user)
+pub fn update(id: web::Path<i32>, user: web::Json<User>) -> Result<HttpResponse, HttpResponse> {
+    User::update(&id, &user)
         .map(|_| HttpResponse::Ok().json(()))
         .map_err(|e| {
             HttpResponse::InternalServerError().json(e.to_string())
         })
 }
 
-pub fn upsert(Id: web::Path<i32>, user: web::Json<User>) -> Result<HttpResponse, HttpResponse> {
-    User::upsert(&Id, &user)
+pub fn upsert(id: web::Path<i32>, user: web::Json<User>) -> Result<HttpResponse, HttpResponse> {
+    User::upsert(&id, &user)
         .map(|_| HttpResponse::Ok().json(()))
         .map_err(|e| {
             HttpResponse::InternalServerError().json(e.to_string())

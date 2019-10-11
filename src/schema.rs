@@ -1,4 +1,17 @@
 table! {
+    sessions (id) {
+        id -> Varchar,
+        player_number -> Varchar,
+        total_ticks -> Int4,
+        game_name -> Varchar,
+        table_name -> Varchar,
+        player_points -> Nullable<Int4>,
+        begin_at -> Nullable<Timestamp>,
+        end_at -> Nullable<Timestamp>,
+    }
+}
+
+table! {
     users (id) {
         id -> Int4,
         player_number -> Varchar,
@@ -17,3 +30,8 @@ table! {
         gender -> Nullable<Int4>,
     }
 }
+
+allow_tables_to_appear_in_same_query!(
+    sessions,
+    users,
+);

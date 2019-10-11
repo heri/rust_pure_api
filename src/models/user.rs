@@ -11,7 +11,6 @@ pub struct NewUser {
     pub id3: Option<String>
 }
 
-
 impl NewUser {
     pub fn create(&self) -> Result<User, diesel::result::Error> {
         use diesel::RunQueryDsl;
@@ -42,6 +41,12 @@ pub struct User {
     pub latitude: Option<f64>,
     pub longitude: Option<f64>,
     pub gender: Option<i32>
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Webhook {
+    pub model: String,
+    pub data: User,
 }
 
 impl UserList {
@@ -99,13 +104,14 @@ impl User {
             .execute(&connection)?;
         Ok(())
     }
-
-    pub fn upsert(id: &i32, user: &User) -> Result<(), diesel::result::Error> {
-        use diesel::QueryDsl;
+    
+    pub fn upsert(webhook: &Webhook) -> Result<(), diesel::result::Error> {
         use diesel::RunQueryDsl;
         use crate::db_connection::establish_connection;
 
         let connection = establish_connection();
+
+        let user = &webhook.data;
 
         diesel::insert_into(users::table)
             .values(user)

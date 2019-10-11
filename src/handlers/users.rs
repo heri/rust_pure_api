@@ -1,4 +1,4 @@
-use actix_web::{HttpRequest, HttpResponse };
+use actix_web::{  HttpRequest, HttpResponse };
 
 use crate::models::user::UserList;
 
@@ -19,6 +19,7 @@ pub fn create(new_user: web::Json<NewUser>) -> Result<HttpResponse, HttpResponse
 }
 
 use crate::models::user::User;
+use crate::models::user::Webhook;
 
 pub fn show(id: web::Path<i32>) -> Result<HttpResponse, HttpResponse> {
     User::find(&id)
@@ -44,8 +45,8 @@ pub fn update(id: web::Path<i32>, user: web::Json<User>) -> Result<HttpResponse,
         })
 }
 
-pub fn upsert(id: web::Path<i32>, user: web::Json<User>) -> Result<HttpResponse, HttpResponse> {
-    User::upsert(&id, &user)
+pub fn upsert(webhook: web::Json<Webhook>) -> Result<HttpResponse, HttpResponse> {
+    User::upsert(&webhook)
         .map(|_| HttpResponse::Ok().json(()))
         .map_err(|e| {
             HttpResponse::InternalServerError().json(e.to_string())

@@ -6,6 +6,11 @@ pub fn index(_req: HttpRequest) -> HttpResponse {
     HttpResponse::Ok().json(UserList::list())
 }
 
+// TODO- This should output HTML not json
+pub fn latest(_req: HttpRequest) -> HttpResponse {
+    HttpResponse::Ok().json(UserList::latest())
+}
+
 use crate::models::user::NewUser;
 use actix_web::web;
 

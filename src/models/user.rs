@@ -1,4 +1,6 @@
 use crate::schema::users;
+use chrono::{NaiveDateTime, Local};
+use diesel::ExpressionMethods;
 
 #[derive(Serialize, Deserialize)]
 pub struct UserList(pub Vec<User>);
@@ -6,20 +8,31 @@ pub struct UserList(pub Vec<User>);
 #[derive(Insertable, Deserialize, AsChangeset)]
 #[table_name="users"]
 pub struct NewUser {
-    pub last_name: Option<String>,
-    pub address1: Option<String>,
-    pub id3: Option<String>
+    pub first_name: String,
+    pub last_name: String,
+    pub player_number: String,
+    pub created: NaiveDateTime
 }
 
+
 impl NewUser {
+
     pub fn create(&self) -> Result<User, diesel::result::Error> {
         use diesel::RunQueryDsl;
         use crate::db_connection::establish_connection;
 
         let connection = establish_connection();
         
+        let new_user = NewUser {
+            // first_name: "test_string" would not work . That would pass a reference but this expects insead a std::string::String
+            first_name: self.last_name.to_string(), 
+            last_name: self.last_name.to_string(), 
+            player_number: self.player_number.to_string(), 
+            created: Local::now().naive_local()
+        };
+
         diesel::insert_into(users::table)
-            .values(self)
+            .values(&new_user)
             .get_result(&connection)
     }
 }
@@ -40,7 +53,8 @@ pub struct User {
     pub is_banned: Option<i32>,
     pub latitude: Option<f64>,
     pub longitude: Option<f64>,
-    pub gender: Option<i32>
+    pub gender: Option<i32>,
+    pub created: NaiveDateTime
 }
 
 #[derive(Serialize, Deserialize)]
@@ -61,6 +75,25 @@ impl UserList {
         let result = 
             users
                 .limit(10)
+                .load::<User>(&connection)
+                .expect("Error loading users");
+
+        UserList(result)
+    }
+    
+    // TO-Do : this should output HTML
+    pub fn latest() -> Self {
+        use diesel::RunQueryDsl;
+        use diesel::QueryDsl;
+        use crate::schema::users::dsl::*;
+        use crate::db_connection::establish_connection;
+
+        let connection = establish_connection();
+
+        let result = 
+            users
+                .limit(10)
+                .order(created.desc())
                 .load::<User>(&connection)
                 .expect("Error loading users");
 

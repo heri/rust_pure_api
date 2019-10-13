@@ -28,6 +28,7 @@ table! {
         latitude -> Nullable<Float8>,
         longitude -> Nullable<Float8>,
         gender -> Nullable<Int4>,
+        created -> Timestamp,
     }
 }
 

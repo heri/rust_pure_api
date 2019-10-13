@@ -51,6 +51,10 @@ fn main() {
             web::resource("/v1/webhook/session")
                 .route(web::post().to_async(handlers::sessions::upsert))
         )
+        .service(
+            web::resource("/")
+                .route(web::get().to_async(handlers::users::latest))
+        )
     )
     .bind("127.0.0.1:8088").unwrap()
     .start();

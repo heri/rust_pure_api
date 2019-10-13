@@ -14,5 +14,6 @@ CREATE TABLE users (
   is_banned INTEGER,
   latitude FLOAT,
   longitude FLOAT,
-  gender INTEGER
+  gender INTEGER,
+  created TIMESTAMP
 )

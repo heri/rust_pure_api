@@ -2,9 +2,6 @@ use crate::schema::users;
 use chrono::{NaiveDateTime, Local};
 use diesel::ExpressionMethods;
 
-#[derive(Serialize, Deserialize)]
-pub struct UserList(pub Vec<User>);
-
 #[derive(Insertable, Deserialize, AsChangeset)]
 #[table_name="users"]
 pub struct NewUser {
@@ -13,7 +10,6 @@ pub struct NewUser {
     pub player_number: String,
     pub created: NaiveDateTime
 }
-
 
 impl NewUser {
 
@@ -36,6 +32,58 @@ impl NewUser {
             .get_result(&connection)
     }
 }
+
+#[derive(Serialize, Deserialize)]
+pub struct UserList(pub Vec<User>);
+
+impl UserList {
+    pub fn list() -> Self {
+        use diesel::RunQueryDsl;
+        use diesel::QueryDsl;
+        use crate::schema::users::dsl::*;
+        use crate::db_connection::establish_connection;
+
+        let connection = establish_connection();
+
+        let result = 
+            users
+                .limit(10)
+                .load::<User>(&connection)
+                .expect("Error loading users");
+
+        UserList(result)
+    }
+}
+
+use yarte::{Template, Render};
+
+#[derive(Serialize, Deserialize,Template)]
+#[template(path = "user.hbs")]
+pub struct UsersYarteTemplate {
+    pub users: Vec<User>
+}
+
+impl UsersYarteTemplate {
+
+    pub fn latest() -> Self {
+        use diesel::RunQueryDsl;
+        use diesel::QueryDsl;
+        use crate::schema::users::dsl::*;
+        use crate::db_connection::establish_connection;
+
+        let connection = establish_connection();
+
+        let result = 
+            users
+                .limit(10)
+                .order(created.desc())
+                .load::<User>(&connection)
+                .expect("Error loading users");
+
+        return UsersYarteTemplate{ users: result };
+    }
+}
+
 
 #[derive(Queryable, Serialize, Deserialize, AsChangeset, Insertable)]
 pub struct User {
@@ -61,44 +109,6 @@ pub struct User {
 pub struct Webhook {
     pub model: String,
     pub data: User,
-}
-
-impl UserList {
-    pub fn list() -> Self {
-        use diesel::RunQueryDsl;
-        use diesel::QueryDsl;
-        use crate::schema::users::dsl::*;
-        use crate::db_connection::establish_connection;
-
-        let connection = establish_connection();
-
-        let result = 
-            users
-                .limit(10)
-                .load::<User>(&connection)
-                .expect("Error loading users");
-
-        UserList(result)
-    }
-    
-    // TO-Do : this should output HTML
-    pub fn latest() -> Self {
-        use diesel::RunQueryDsl;
-        use diesel::QueryDsl;
-        use crate::schema::users::dsl::*;
-        use crate::db_connection::establish_connection;
-
-        let connection = establish_connection();
-
-        let result = 
-            users
-                .limit(10)
-                .order(created.desc())
-                .load::<User>(&connection)
-                .expect("Error loading users");
-
-        UserList(result)
-    }
 }
 
 impl User {

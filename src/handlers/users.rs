@@ -1,6 +1,7 @@
 use actix_web::{  HttpRequest, HttpResponse };
 
 use crate::models::user::UserList;
+use crate::models::user::UsersYarteTemplate;
 
 pub fn index(_req: HttpRequest) -> HttpResponse {
     HttpResponse::Ok().json(UserList::list())
@@ -8,7 +9,11 @@ pub fn index(_req: HttpRequest) -> HttpResponse {
 
 // TODO- This should output HTML not json
 pub fn latest(_req: HttpRequest) -> HttpResponse {
-    HttpResponse::Ok().json(UserList::latest())
+    let tmpl = UsersYarteTemplate::latest();
+    let res = tmpl.render().unwrap();
+
+    HttpResponse::Ok()
+        .body(res)
 }
 
 use crate::models::user::NewUser;

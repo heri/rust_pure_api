@@ -55,15 +55,14 @@ impl UserList {
     }
 }
 
-use yarte::{Template, Render};
-
-#[derive(Serialize, Deserialize,Template)]
-#[template(path = "user.hbs")]
-pub struct UsersYarteTemplate {
+use askama::Template;
+#[derive(Template)]
+#[template(path = "user.html")]
+pub struct UsersTemplate {
     pub users: Vec<User>
 }
 
-impl UsersYarteTemplate {
+impl UsersTemplate {
 
     pub fn latest() -> Self {
         use diesel::RunQueryDsl;
@@ -80,7 +79,7 @@ impl UsersYarteTemplate {
                 .load::<User>(&connection)
                 .expect("Error loading users");
 
-        return UsersYarteTemplate{ users: result };
+        return UsersTemplate{ users: result };
     }
 }
 

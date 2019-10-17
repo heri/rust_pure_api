@@ -9,7 +9,7 @@ extern crate chrono;
 extern crate dotenv;
 extern crate serde;
 extern crate serde_json;
-extern crate yarte;
+extern crate askama;
 #[macro_use] 
 extern crate serde_derive;
 

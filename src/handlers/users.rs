@@ -1,15 +1,16 @@
 use actix_web::{  HttpRequest, HttpResponse };
 
 use crate::models::user::UserList;
-use crate::models::user::UsersYarteTemplate;
+use crate::models::user::UsersTemplate;
+use askama::Template;
 
 pub fn index(_req: HttpRequest) -> HttpResponse {
     HttpResponse::Ok().json(UserList::list())
 }
 
-// TODO- This should output HTML not json
+// Faster Bare Metal Alternative https://yarte.netlify.com/with_actix_web.html
 pub fn latest(_req: HttpRequest) -> HttpResponse {
-    let tmpl = UsersYarteTemplate::latest();
+    let tmpl = UsersTemplate::latest();
     let res = tmpl.render().unwrap();
 
     HttpResponse::Ok()

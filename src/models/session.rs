@@ -6,12 +6,12 @@ pub struct SessionList(pub Vec<Session>);
 
 #[derive(Debug, Serialize, Deserialize, Queryable, Insertable, AsChangeset)]
 pub struct Session {
-    pub id: String,
-    pub player_number: String,
-    pub total_ticks: i32,
-    pub game_name: String,
-    pub table_name: String,
-    pub player_points: Option<i32>,
+    pub Id: String,
+    pub playerNumber: String,
+    pub totalTicks: i32,
+    pub gameName: String,
+    pub tableName: String,
+    pub playerPoints: Option<i32>,
     pub begin_at: Option<NaiveDateTime>,
     pub end_at: Option<NaiveDateTime>
 }
@@ -45,7 +45,7 @@ impl SessionList {
 
         let result = 
             sessions
-                .filter(player_number.eq(_player_number))
+                .filter(playerNumber.eq(_player_number))
                 .limit(10)
                 .load::<Session>(&connection)
                 .expect("Error loading sessions for user");
@@ -64,7 +64,7 @@ impl Session {
 
         diesel::insert_into(sessions::table)
             .values(session)
-            .on_conflict(sessions::id)
+            .on_conflict(sessions::Id)
             .do_update()
             .set(session)
             .execute(&connection)?; 

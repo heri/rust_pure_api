@@ -5,9 +5,9 @@ use diesel::ExpressionMethods;
 #[derive(Insertable, Deserialize, AsChangeset)]
 #[table_name="users"]
 pub struct NewUser {
-    pub first_name: String,
-    pub last_name: String,
-    pub player_number: String,
+    pub firstName: String,
+    pub lastName: String,
+    pub playerNumber: String,
     pub created: NaiveDateTime
 }
 
@@ -21,9 +21,9 @@ impl NewUser {
         
         let new_user = NewUser {
             // first_name: "test_string" would not work . That would pass a reference but this expects insead a std::string::String
-            first_name: self.last_name.to_string(), 
-            last_name: self.last_name.to_string(), 
-            player_number: self.player_number.to_string(), 
+            firstName: self.lastName.to_string(), 
+            lastName: self.lastName.to_string(), 
+            playerNumber: self.playerNumber.to_string(), 
             created: Local::now().naive_local()
         };
 
@@ -86,10 +86,10 @@ impl UsersTemplate {
 
 #[derive(Queryable, Serialize, Deserialize, AsChangeset, Insertable)]
 pub struct User {
-    pub id: i32,
-    pub player_number: String,
-    pub first_name: String,
-    pub last_name: String,
+    pub Id: i32,
+    pub playerNumber: String,
+    pub firstName: String,
+    pub lastName: String,
     pub tier: Option<i32>,
     pub address1: String,
     pub city: String,
@@ -97,7 +97,7 @@ pub struct User {
     pub country: Option<String>,
     pub email: Option<String>,
     pub id3: Option<String>,
-    pub is_banned: Option<i32>,
+    pub isBanned: Option<i32>,
     pub latitude: Option<f64>,
     pub longitude: Option<f64>,
     pub gender: Option<i32>,
@@ -111,17 +111,17 @@ pub struct Webhook {
 }
 
 impl User {
-    pub fn find(id: &i32) -> Result<User, diesel::result::Error> {
+    pub fn find(Id: &i32) -> Result<User, diesel::result::Error> {
         use diesel::QueryDsl;
         use diesel::RunQueryDsl;
         use crate::db_connection::establish_connection;
 
         let connection = establish_connection();
 
-        users::table.find(id).first(&connection)
+        users::table.find(Id).first(&connection)
     }
 
-    pub fn destroy(id: &i32) -> Result<(), diesel::result::Error> {
+    pub fn destroy(Id: &i32) -> Result<(), diesel::result::Error> {
         use diesel::QueryDsl;
         use diesel::RunQueryDsl;
         use crate::schema::users::dsl;
@@ -129,11 +129,11 @@ impl User {
 
         let connection = establish_connection();
 
-        diesel::delete(dsl::users.find(id)).execute(&connection)?;
+        diesel::delete(dsl::users.find(Id)).execute(&connection)?;
         Ok(())
     }
 
-    pub fn update(id: &i32, user: &User) -> Result<(), diesel::result::Error> {
+    pub fn update(Id: &i32, user: &User) -> Result<(), diesel::result::Error> {
         use diesel::QueryDsl;
         use diesel::RunQueryDsl;
         use crate::schema::users::dsl;
@@ -141,7 +141,7 @@ impl User {
 
         let connection = establish_connection();
 
-        diesel::update(dsl::users.find(id))
+        diesel::update(dsl::users.find(Id))
             .set(user)
             .execute(&connection)?;
         Ok(())
@@ -157,7 +157,7 @@ impl User {
 
         diesel::insert_into(users::table)
             .values(user)
-            .on_conflict(users::id)
+            .on_conflict(users::Id)
             .do_update()
             .set(user)
             .execute(&connection)?; 

@@ -29,7 +29,7 @@ fn main() {
                 .route(web::post().to_async(handlers::users::create))
         )
         .service(
-            web::resource("/v1/users/{id}")
+            web::resource("/v1/users/{Id}")
                 .route(web::get().to_async(handlers::users::show))
                 .route(web::delete().to_async(handlers::users::destroy))
                 .route(web::patch().to_async(handlers::users::update))
@@ -39,7 +39,7 @@ fn main() {
                 .route(web::get().to_async(handlers::sessions::index))
         )
         .service(
-            web::resource("/v1/sessions/user/#{player_number}")
+            web::resource("/v1/sessions/user/#{playerNumber}")
                 .route(web::get().to_async(handlers::sessions::for_user))
         )
         .service(

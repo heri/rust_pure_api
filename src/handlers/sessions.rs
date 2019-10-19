@@ -13,9 +13,10 @@ pub fn for_user(player_number: web::Path<String>) -> HttpResponse {
 use actix_web::web;
 
 use crate::models::session::Session;
+use crate::models::session::SessionWebhook;
 
-pub fn upsert(session: web::Json<Session>) -> Result<HttpResponse, HttpResponse> {
-    Session::upsert(&session)
+pub fn upsert(session: web::Json<SessionWebhook>) -> Result<HttpResponse, HttpResponse> {
+    SessionWebhook::upsert(&session)
         .map(|_| HttpResponse::Ok().json(()))
         .map_err(|e| {
             HttpResponse::InternalServerError().json(e.to_string())

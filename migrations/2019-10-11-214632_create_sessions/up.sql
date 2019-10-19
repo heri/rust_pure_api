@@ -2,10 +2,10 @@
 CREATE TABLE sessions (
   Id VARCHAR PRIMARY KEY,
   playerNumber VARCHAR NOT NULL,
-  totalTicks INTEGER NOT NULL,
-  gameName VARCHAR NOT NULL,
-  tableName VARCHAR NOT NULL,
-  playerPoints INTEGER,
+  total_ticks INTEGER NOT NULL,
+  game_name VARCHAR NOT NULL,
+  table_name VARCHAR NOT NULL,
+  player_points INTEGER,
   begin_at TIMESTAMP,
   end_at TIMESTAMP
 )

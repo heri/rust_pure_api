@@ -1,11 +1,11 @@
 table! {
-    sessions (Id) {
-        Id -> Varchar,
+    sessions (id) {
+        id -> Varchar,
         playerNumber -> Varchar,
-        totalTicks -> Int4,
-        gameName -> Varchar,
-        tableName -> Varchar,
-        playerPoints -> Nullable<Int4>,
+        total_ticks -> Int4,
+        game_name -> Varchar,
+        table_name -> Varchar,
+        player_points -> Nullable<Int4>,
         begin_at -> Nullable<Timestamp>,
         end_at -> Nullable<Timestamp>,
     }

@@ -6,12 +6,24 @@ pub struct SessionList(pub Vec<Session>);
 
 #[derive(Debug, Serialize, Deserialize, Queryable, Insertable, AsChangeset)]
 pub struct Session {
-    pub Id: String,
+    pub id: String,
     pub playerNumber: String,
-    pub totalTicks: i32,
-    pub gameName: String,
-    pub tableName: String,
-    pub playerPoints: Option<i32>,
+    pub total_ticks: i32,
+    pub game_name: String,
+    pub table_name: String,
+    pub player_points: Option<i32>,
+    pub begin_at: Option<NaiveDateTime>,
+    pub end_at: Option<NaiveDateTime>
+}
+
+#[derive(Insertable, AsChangeset)]
+#[table_name="sessions"]
+pub struct InsertableSession {
+    pub playerNumber: String,
+    pub total_ticks: i32,
+    pub game_name: String,
+    pub table_name: String,
+    pub player_points: Option<i32>,
     pub begin_at: Option<NaiveDateTime>,
     pub end_at: Option<NaiveDateTime>
 }
@@ -64,9 +76,48 @@ impl Session {
 
         diesel::insert_into(sessions::table)
             .values(session)
-            .on_conflict(sessions::Id)
+            .on_conflict(sessions::id)
             .do_update()
             .set(session)
+            .execute(&connection)?; 
+        Ok(())
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct SessionWebhook {
+    pub UniqueId: String,
+    pub TotalTicks: i32,
+    pub GameName: String,
+    pub TableName: String,
+    pub PlayerPoints: i32,
+    pub OpenDate: NaiveDateTime,
+    pub ClosedDate: NaiveDateTime
+}
+
+impl SessionWebhook {
+
+    pub fn upsert(webhook: &SessionWebhook) -> Result<(), diesel::result::Error> {
+        use diesel::RunQueryDsl;
+        use crate::db_connection::establish_connection;
+
+        let connection = establish_connection();
+
+        let session = InsertableSession {
+            playerNumber: webhook.UniqueId.to_string(),
+            total_ticks: webhook.TotalTicks,
+            game_name: webhook.GameName.to_string(),
+            table_name: webhook.TableName.to_string(),
+            player_points: Some(webhook.PlayerPoints),
+            begin_at: Some(webhook.OpenDate),
+            end_at: Some(webhook.ClosedDate)
+        };
+
+        diesel::insert_into(sessions::table)
+            .values(&session)
+            .on_conflict(sessions::id)
+            .do_update()
+            .set(&session)
             .execute(&connection)?; 
         Ok(())
     }

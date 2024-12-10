@@ -1,6 +1,8 @@
 use crate::schema::users;
 use chrono::{NaiveDateTime, Local};
 use diesel::ExpressionMethods;
+use std::sync::Arc;
+use crate::db_connection::DbPool;
 
 #[derive(Insertable, Deserialize, AsChangeset)]
 #[table_name="users"]
@@ -12,18 +14,15 @@ pub struct NewUser {
 }
 
 impl NewUser {
-
-    pub fn create(&self) -> Result<User, diesel::result::Error> {
+    pub fn create(&self, pool: Arc<DbPool>) -> Result<User, diesel::result::Error> {
         use diesel::RunQueryDsl;
-        use crate::db_connection::establish_connection;
 
-        let connection = establish_connection();
+        let connection = pool.get()?;
         
         let new_user = NewUser {
-            // first_name: "test_string" would not work . That would pass a reference but this expects insead a std::string::String
-            firstName: self.lastName.to_string(), 
-            lastName: self.lastName.to_string(), 
-            playerNumber: self.playerNumber.to_string(), 
+            firstName: self.firstName.clone(),
+            lastName: self.lastName.clone(),
+            playerNumber: self.playerNumber.clone(),
             created: Local::now().naive_local()
         };
 
@@ -37,19 +36,17 @@ impl NewUser {
 pub struct UserList(pub Vec<User>);
 
 impl UserList {
-    pub fn list() -> Self {
+    pub fn list(pool: Arc<DbPool>) -> Self {
         use diesel::RunQueryDsl;
         use diesel::QueryDsl;
         use crate::schema::users::dsl::*;
-        use crate::db_connection::establish_connection;
 
-        let connection = establish_connection();
+        let connection = pool.get().expect("Failed to get DB connection");
 
-        let result = 
-            users
-                .limit(10)
-                .load::<User>(&connection)
-                .expect("Error loading users");
+        let result = users
+            .limit(10)
+            .load::<User>(&connection)
+            .expect("Error loading users");
 
         UserList(result)
     }
@@ -63,26 +60,22 @@ pub struct UsersTemplate {
 }
 
 impl UsersTemplate {
-
-    pub fn latest() -> Self {
+    pub fn latest(pool: Arc<DbPool>) -> Self {
         use diesel::RunQueryDsl;
         use diesel::QueryDsl;
         use crate::schema::users::dsl::*;
-        use crate::db_connection::establish_connection;
 
-        let connection = establish_connection();
+        let connection = pool.get().expect("Failed to get DB connection");
 
-        let result = 
-            users
-                .limit(10)
-                .order(created.desc())
-                .load::<User>(&connection)
-                .expect("Error loading users");
+        let result = users
+            .limit(10)
+            .order(created.desc())
+            .load::<User>(&connection)
+            .expect("Error loading users");
 
-        return UsersTemplate{ users: result };
+        UsersTemplate { users: result }
     }
 }
-
 
 #[derive(Queryable, Serialize, Deserialize, AsChangeset, Insertable)]
 pub struct User {
@@ -111,48 +104,40 @@ pub struct Webhook {
 }
 
 impl User {
-    pub fn find(Id: &i32) -> Result<User, diesel::result::Error> {
+    pub fn find(Id: &i32, pool: Arc<DbPool>) -> Result<User, diesel::result::Error> {
         use diesel::QueryDsl;
         use diesel::RunQueryDsl;
-        use crate::db_connection::establish_connection;
 
-        let connection = establish_connection();
-
+        let connection = pool.get()?;
         users::table.find(Id).first(&connection)
     }
 
-    pub fn destroy(Id: &i32) -> Result<(), diesel::result::Error> {
+    pub fn destroy(Id: &i32, pool: Arc<DbPool>) -> Result<(), diesel::result::Error> {
         use diesel::QueryDsl;
         use diesel::RunQueryDsl;
         use crate::schema::users::dsl;
-        use crate::db_connection::establish_connection;
 
-        let connection = establish_connection();
-
+        let connection = pool.get()?;
         diesel::delete(dsl::users.find(Id)).execute(&connection)?;
         Ok(())
     }
 
-    pub fn update(Id: &i32, user: &User) -> Result<(), diesel::result::Error> {
+    pub fn update(Id: &i32, user: &User, pool: Arc<DbPool>) -> Result<(), diesel::result::Error> {
         use diesel::QueryDsl;
         use diesel::RunQueryDsl;
         use crate::schema::users::dsl;
-        use crate::db_connection::establish_connection;
 
-        let connection = establish_connection();
-
+        let connection = pool.get()?;
         diesel::update(dsl::users.find(Id))
             .set(user)
             .execute(&connection)?;
         Ok(())
     }
     
-    pub fn upsert(webhook: &Webhook) -> Result<(), diesel::result::Error> {
+    pub fn upsert(webhook: &Webhook, pool: Arc<DbPool>) -> Result<(), diesel::result::Error> {
         use diesel::RunQueryDsl;
-        use crate::db_connection::establish_connection;
 
-        let connection = establish_connection();
-
+        let connection = pool.get()?;
         let user = &webhook.data;
 
         diesel::insert_into(users::table)
@@ -160,7 +145,7 @@ impl User {
             .on_conflict(users::Id)
             .do_update()
             .set(user)
-            .execute(&connection)?; 
+            .execute(&connection)?;
         Ok(())
     }
 }

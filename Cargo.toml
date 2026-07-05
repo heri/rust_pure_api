@@ -2,6 +2,7 @@
 name = "rust_pure_api"
 version = "0.1.0"
 authors = ["heri <heri@studiozenkai.com>"]
+edition = "2021"
 
 [dependencies]
 actix = "0.13.5"

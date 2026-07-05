@@ -2,7 +2,7 @@ use crate::schema::users;
 use chrono::{NaiveDateTime, Local};
 use diesel::ExpressionMethods;
 use std::sync::Arc;
-use crate::db_connection::DbPool;
+use crate::db_connection::{DbPool, get_connection};
 
 #[derive(Insertable, Deserialize, AsChangeset)]
 #[table_name="users"]
@@ -17,8 +17,8 @@ impl NewUser {
     pub fn create(&self, pool: Arc<DbPool>) -> Result<User, diesel::result::Error> {
         use diesel::RunQueryDsl;
 
-        let connection = pool.get()?;
-        
+        let mut connection = get_connection(&pool)?;
+
         let new_user = NewUser {
             firstName: self.firstName.clone(),
             lastName: self.lastName.clone(),
@@ -28,7 +28,7 @@ impl NewUser {
 
         diesel::insert_into(users::table)
             .values(&new_user)
-            .get_result(&connection)
+            .get_result(&mut connection)
     }
 }
 
@@ -41,11 +41,11 @@ impl UserList {
         use diesel::QueryDsl;
         use crate::schema::users::dsl::*;
 
-        let connection = pool.get().expect("Failed to get DB connection");
+        let mut connection = pool.get().expect("Failed to get DB connection");
 
         let result = users
             .limit(10)
-            .load::<User>(&connection)
+            .load::<User>(&mut connection)
             .expect("Error loading users");
 
         UserList(result)
@@ -65,12 +65,12 @@ impl UsersTemplate {
         use diesel::QueryDsl;
         use crate::schema::users::dsl::*;
 
-        let connection = pool.get().expect("Failed to get DB connection");
+        let mut connection = pool.get().expect("Failed to get DB connection");
 
         let result = users
             .limit(10)
             .order(created.desc())
-            .load::<User>(&connection)
+            .load::<User>(&mut connection)
             .expect("Error loading users");
 
         UsersTemplate { users: result }
@@ -108,8 +108,8 @@ impl User {
         use diesel::QueryDsl;
         use diesel::RunQueryDsl;
 
-        let connection = pool.get()?;
-        users::table.find(Id).first(&connection)
+        let mut connection = get_connection(&pool)?;
+        users::table.find(Id).first(&mut connection)
     }
 
     pub fn destroy(Id: &i32, pool: Arc<DbPool>) -> Result<(), diesel::result::Error> {
@@ -117,8 +117,8 @@ impl User {
         use diesel::RunQueryDsl;
         use crate::schema::users::dsl;
 
-        let connection = pool.get()?;
-        diesel::delete(dsl::users.find(Id)).execute(&connection)?;
+        let mut connection = get_connection(&pool)?;
+        diesel::delete(dsl::users.find(Id)).execute(&mut connection)?;
         Ok(())
     }
 
@@ -127,17 +127,17 @@ impl User {
         use diesel::RunQueryDsl;
         use crate::schema::users::dsl;
 
-        let connection = pool.get()?;
+        let mut connection = get_connection(&pool)?;
         diesel::update(dsl::users.find(Id))
             .set(user)
-            .execute(&connection)?;
+            .execute(&mut connection)?;
         Ok(())
     }
-    
+
     pub fn upsert(webhook: &Webhook, pool: Arc<DbPool>) -> Result<(), diesel::result::Error> {
         use diesel::RunQueryDsl;
 
-        let connection = pool.get()?;
+        let mut connection = get_connection(&pool)?;
         let user = &webhook.data;
 
         diesel::insert_into(users::table)
@@ -145,7 +145,7 @@ impl User {
             .on_conflict(users::Id)
             .do_update()
             .set(user)
-            .execute(&connection)?;
+            .execute(&mut connection)?;
         Ok(())
     }
 }

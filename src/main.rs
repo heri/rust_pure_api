@@ -18,11 +18,10 @@ extern crate actix_web;
 extern crate futures;
 
 use actix_web::{App, HttpServer, web};
-use std::sync::Arc;
 use crate::db_connection::establish_connection_pool;
 
-fn main() {
-    let sys = actix::System::new("rust_api");
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
     let pool = establish_connection_pool();
 
     HttpServer::new(move || {
@@ -63,7 +62,4 @@ fn main() {
     .bind("127.0.0.1:8088")?
     .run()
     .await
-
-    println!("Started http server: 127.0.0.1:8088");
-    let _ = sys.run();
 }

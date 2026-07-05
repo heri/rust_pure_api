@@ -1,24 +1,24 @@
-use actix_web::{  HttpRequest, HttpResponse };
+use actix_web::{HttpRequest, HttpResponse, web};
+use std::sync::Arc;
+use crate::db_connection::DbPool;
+use crate::handlers::respond;
 
 use crate::models::session::SessionList;
-
-pub fn index(_req: HttpRequest) -> HttpResponse {
-    HttpResponse::Ok().json(SessionList::list())
-}
-
-pub fn for_user(player_number: web::Path<String>) -> HttpResponse {
-    HttpResponse::Ok().json(SessionList::for_user(&player_number))
-}
-
-use actix_web::web;
-
-use crate::models::session::Session;
 use crate::models::session::SessionWebhook;
 
-pub fn upsert(session: web::Json<SessionWebhook>) -> Result<HttpResponse, HttpResponse> {
-    SessionWebhook::upsert(&session)
-        .map(|_| HttpResponse::Ok().json(()))
-        .map_err(|e| {
-            HttpResponse::InternalServerError().json(e.to_string())
-        })
+pub async fn index(pool: web::Data<Arc<DbPool>>, _req: HttpRequest) -> HttpResponse {
+    let pool = pool.get_ref().clone();
+    respond(move || SessionList::list(pool)).await
+}
+
+pub async fn for_user(pool: web::Data<Arc<DbPool>>, player_number: web::Path<String>) -> HttpResponse {
+    let pool = pool.get_ref().clone();
+    let player_number = player_number.into_inner();
+    respond(move || SessionList::for_user(&player_number, pool)).await
+}
+
+pub async fn upsert(pool: web::Data<Arc<DbPool>>, session: web::Json<SessionWebhook>) -> HttpResponse {
+    let pool = pool.get_ref().clone();
+    let session = session.into_inner();
+    respond(move || SessionWebhook::upsert(&session, pool)).await
 }

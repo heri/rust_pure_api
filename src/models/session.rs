@@ -1,5 +1,7 @@
 use chrono::NaiveDateTime;
 use crate::schema::sessions;
+use std::sync::Arc;
+use crate::db_connection::{DbPool, get_connection};
 
 #[derive(Serialize, Deserialize)]
 pub struct SessionList(pub Vec<Session>);
@@ -29,57 +31,49 @@ pub struct InsertableSession {
 }
 
 impl SessionList {
-    pub fn list() -> Self {
+    pub fn list(pool: Arc<DbPool>) -> Result<Self, diesel::result::Error> {
         use diesel::RunQueryDsl;
         use diesel::QueryDsl;
         use crate::schema::sessions::dsl::*;
-        use crate::db_connection::establish_connection;
 
-        let connection = establish_connection();
+        let mut connection = get_connection(&pool)?;
 
-        let result = 
-            sessions
-                .limit(10)
-                .load::<Session>(&connection)
-                .expect("Error loading sessions");
+        let result = sessions
+            .limit(10)
+            .load::<Session>(&mut connection)?;
 
-        SessionList(result)
+        Ok(SessionList(result))
     }
 
-    pub fn for_user(_player_number: &String) -> Self {
+    pub fn for_user(_player_number: &String, pool: Arc<DbPool>) -> Result<Self, diesel::result::Error> {
         use diesel::RunQueryDsl;
         use diesel::QueryDsl;
         use crate::schema::sessions::dsl::*;
-        use crate::db_connection::establish_connection;
         use diesel::ExpressionMethods;
 
-        let connection = establish_connection();
+        let mut connection = get_connection(&pool)?;
 
-        let result = 
-            sessions
-                .filter(playerNumber.eq(_player_number))
-                .limit(10)
-                .load::<Session>(&connection)
-                .expect("Error loading sessions for user");
+        let result = sessions
+            .filter(playerNumber.eq(_player_number))
+            .limit(10)
+            .load::<Session>(&mut connection)?;
 
-        SessionList(result)
+        Ok(SessionList(result))
     }
 }
 
 impl Session {
-
-    pub fn upsert(session: &Session) -> Result<(), diesel::result::Error> {
+    pub fn upsert(session: &Session, pool: Arc<DbPool>) -> Result<(), diesel::result::Error> {
         use diesel::RunQueryDsl;
-        use crate::db_connection::establish_connection;
 
-        let connection = establish_connection();
+        let mut connection = get_connection(&pool)?;
 
         diesel::insert_into(sessions::table)
             .values(session)
             .on_conflict(sessions::id)
             .do_update()
             .set(session)
-            .execute(&connection)?; 
+            .execute(&mut connection)?;
         Ok(())
     }
 }
@@ -96,12 +90,10 @@ pub struct SessionWebhook {
 }
 
 impl SessionWebhook {
-
-    pub fn upsert(webhook: &SessionWebhook) -> Result<(), diesel::result::Error> {
+    pub fn upsert(webhook: &SessionWebhook, pool: Arc<DbPool>) -> Result<(), diesel::result::Error> {
         use diesel::RunQueryDsl;
-        use crate::db_connection::establish_connection;
 
-        let connection = establish_connection();
+        let mut connection = get_connection(&pool)?;
 
         let session = InsertableSession {
             playerNumber: webhook.UniqueId.to_string(),
@@ -118,7 +110,7 @@ impl SessionWebhook {
             .on_conflict(sessions::id)
             .do_update()
             .set(&session)
-            .execute(&connection)?; 
+            .execute(&mut connection)?;
         Ok(())
     }
 }

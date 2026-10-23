@@ -43,3 +43,7 @@ NEXT
 * how does this deal with concurrent requests?
 * Use an in-memory store such as redis instead of postgres and then benchmark if you can easily get 1Mops. This would be similar to a trading platform receiving buy/sell orders.
 * Tests
+
+## Who is behind this
+
+Heri is a software engineer, photographer, father and Montréaler. Building in the open — see more projects at [studiozenkai.com](https://studiozenkai.com).
